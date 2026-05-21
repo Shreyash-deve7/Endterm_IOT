@@ -1,0 +1,45 @@
+Q12 Part D: Redis Data Type Selection for Unique Device IDs
+
+
+ANSWER: Redis SET Data Structure
+
+
+Why SET is the Best Choice:
+
+1. Automatic Uniqueness Guarantee
+   - Sets eliminate duplicate entries automatically
+   - Adding the same device_id multiple times results in only one entry
+   - No custom logic needed for deduplication
+
+2. O(1) Time Complexity Operations
+   - SADD (add device ID): O(1)
+   - SISMEMBER (check if exists): O(1)
+   - SMEMBERS (get all): O(N)
+   - Much faster than checking a list or string
+
+3. Designed for Membership Testing
+   - Primary use case is "does this ID exist?"
+   - Perfect for tracking active devices
+   - Better than LIST or HASH for this scenario
+
+4. Efficient Daily Rotation
+   - Use key "devices:today" to store today's unique devices
+   - Set EXPIRE devices:today 86400 for automatic 24-hour cleanup
+   - No manual removal needed
+
+5. Scalability
+   - Handles millions of unique device IDs efficiently
+   - Memory-optimized for large datasets
+   - Set operations scale well with dataset size
+
+Implementation:
+  SADD devices:today sensor_01 sensor_02 sensor_03 ...
+  EXPIRE devices:today 86400
+  SCARD devices:today (count unique devices)
+  SMEMBERS devices:today (list all active devices)
+
+Why Not Other Data Types:
+  - LIST: Allows duplicates, not optimized for uniqueness
+  - HASH: Better for key-value pairs, overkill here
+  - STRING: Cannot store multiple IDs efficiently
+  - SORTED SET: Unnecessary complexity when order doesn't matter
